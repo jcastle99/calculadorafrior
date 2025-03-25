@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora FRIOR Cambio de Pezoneras</title>
+    <!-- Referencia al manifest.json -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Metaetiquetas para PWA -->
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            background-image: url('https://drive.google.com/uc?export=view&id=1ub0rK16cwGyReOpA1Liy_T6L8lJZu38o');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-opacity: 0.1;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(233, 236, 239, 0.9);
+            border-radius: 4px;
+        }
+        .modificacion-campos {
+            display: none;
+        }
+        .highlight {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .signature {
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 20px;
+            color: #333;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 15px;
+            color: #333;
+        }
+        .explicacion {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora FRIOR Cambio de Pezoneras</h1>
+        <form id="formulario">
+            <label for="ordenosDia">Número de Ordeños por Día:</label>
+            <input type="number" id="ordenosDia" value="2" required>
+
+            <label for="puntosOrdeno">Puntos de Ordeño (Inicial):</label>
+            <input type="number" id="puntosOrdeno" value="40" required>
+
+            <label for="vacas">Vacas Ordeñadas (Inicial):</label>
+            <input type="number" id="vacas" value="430" required>
+
+            <label for="durabilidad">Durabilidad de Pezoneras por Ordeño por Punto:</label>
+            <input type="number" id="durabilidad" value="2500" required>
+
+            <label for="fechaInicio">Fecha de Inicio (deja en blanco para usar la fecha actual):</label>
+            <input type="date" id="fechaInicio" placeholder="YYYY-MM-DD">
+
+            <label for="diasEspecificos">Calcular Fecha a Partir de un Número de Días (opcional):</label>
+            <input type="number" id="diasEspecificos" placeholder="Ingresa el número de días">
+
+            <label for="realizarModificacion">¿Realizar Cálculo con Modificaciones en Número de Vacas o de Puntos?</label>
+            <select id="realizarModificacion" onchange="mostrarCamposModificacion()">
+                <option value="no">No</option>
+                <option value="si">Sí</option>
+            </select>
+
+            <div id="modificacion-campos" class="modificacion-campos">
+                <label for="fechaCambio">Fecha de Cambio en el Nº de Vacas o de Puntos (opcional):</label>
+                <input type="date" id="fechaCambio" placeholder="YYYY-MM-DD">
+
+                <label for="nuevoNumeroVacas">Nuevo Número de Vacas (opcional):</label>
+                <input type="number" id="nuevoNumeroVacas" placeholder="Ingresa el nuevo número de vacas">
+
+                <label for="nuevoPuntosOrdeno">Nuevo Número de Puntos de Ordeño (opcional):</label>
+                <input type="number" id="nuevoPuntosOrdeno" placeholder="Ingresa el nuevo número de puntos de ordeño">
+            </div>
+
+            <button type="button" onclick="calcular()">Calcular</button>
+        </form>
+        <div id="resultado"></div>
+        <div class="signature">J.Castle</div>
+    </div>
+
+    <script>
+        // Registrar el Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Error al registrar el Service Worker:', error);
+                    });
+            });
+        }
+
+        function mostrarCamposModificacion() {
+            const seleccion = document.getElementById('realizarModificacion').value;
+            const camposModificacion = document.getElementById('modificacion-campos');
+            if (seleccion === 'si') {
+                camposModificacion.style.display = 'block';
+            } else {
+                camposModificacion.style.display = 'none';
+            }
+        }
+
+        function calcular() {
+            const ordenosDia = parseInt(document.getElementById('ordenosDia').value);
+            let puntosOrdeno = parseInt(document.getElementById('puntosOrdeno').value);
+            const vacas = parseInt(document.getElementById('vacas').value);
+            const durabilidad = parseInt(document.getElementById('durabilidad').value);
+            const fechaInicioInput = document.getElementById('fechaInicio').value;
+            const diasEspecificos = parseInt(document.getElementById('diasEspecificos').value) || 0;
+            const realizarModificacion = document.getElementById('realizarModificacion').value;
+            const fechaCambioInput = document.getElementById('fechaCambio').value;
+            const nuevoNumeroVacas = parseInt(document.getElementById('nuevoNumeroVacas').value) || 0;
+            const nuevoPuntosOrdeno = parseInt(document.getElementById('nuevoPuntosOrdeno').value) || 0;
+
+            let fechaInicio;
+            if (fechaInicioInput) {
+                fechaInicio = new Date(fechaInicioInput);
+            } else {
+                fechaInicio = new Date();
+            }
+
+            const ordeñosTotalesPorDia = ordenosDia * vacas;
+            const ordeñosPorPuntoPorDia = ordeñosTotalesPorDia / puntosOrdeno;
+            const diasDurabilidadInicial = durabilidad / ordeñosPorPuntoPorDia;
+
+            const fechaProximoCambioInicial = new Date(fechaInicio);
+            fechaProximoCambioInicial.setDate(fechaInicio.getDate() + Math.floor(diasDurabilidadInicial));
+
+            let fechaDiasEspecificos = '';
+            if (diasEspecificos > 0) {
+                const fechaCalc = new Date(fechaInicio);
+                fechaCalc.setDate(fechaInicio.getDate() + diasEspecificos);
+                fechaDiasEspecificos = `<p><strong>Fecha Calculada a Partir de ${diasEspecificos} Días:</strong> ${fechaCalc.toLocaleDateString('es-ES')}</p>`;
+            }
+
+            const diasEnMes = 30.42;
+            const mesesEquivalentes = Math.round(diasDurabilidadInicial / diasEnMes);
+
+            const pezonerasPorPunto = 4;
+            let totalPezoneras = puntosOrdeno * pezonerasPorPunto;
+
+            let desgastePezonerasPorDiaInicial = totalPezoneras / diasDurabilidadInicial;
+
+            let durabilidadAjustada = diasDurabilidadInicial;
+            let fechaProximoCambioAjustada = fechaProximoCambioInicial;
+            let desgastePezonerasPorDiaAjustada = desgastePezonerasPorDiaInicial;
+            let mensajeAjuste = '';
+            let explicacionAjuste = '';
+
+            if (realizarModificacion === 'si' && fechaCambioInput && (nuevoNumeroVacas > 0 || nuevoPuntosOrdeno > 0)) {
+                const fechaCambio = new Date(fechaCambioInput);
+
+                const diferenciaTiempo = fechaCambio - fechaInicio;
+                const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+
+                if (diasTranscurridos < 0) {
+                    alert("La fecha de cambio no puede ser anterior a la fecha de inicio.");
+                    return;
+                }
+
+                const ordeñosPorPuntoHastaCambio = ordeñosPorPuntoPorDia * diasTranscurridos;
+
+                const durabilidadRestante = durabilidad - ordeñosPorPuntoHastaCambio;
+
+                if (durabilidadRestante <= 0) {
+                    mensajeAjuste = `<p><strong>Nota:</strong> Las pezoneras ya deberían haberse cambiado antes de la fecha de cambio (${fechaCambio.toLocaleDateString('es-ES')}).</p>`;
+                } else {
+                    const vacasAjustadas = nuevoNumeroVacas > 0 ? nuevoNumeroVacas : vacas;
+                    const puntosOrdenoAjustados = nuevoPuntosOrdeno > 0 ? nuevoPuntosOrdeno : puntosOrdeno;
+
+                    totalPezoneras = puntosOrdenoAjustados * pezonerasPorPunto;
+
+                    const nuevosOrdeñosTotalesPorDia = ordenosDia * vacasAjustadas;
+                    const nuevosOrdeñosPorPuntoPorDia = nuevosOrdeñosTotalesPorDia / puntosOrdenoAjustados;
+                    const diasDurabilidadRestante = durabilidadRestante / nuevosOrdeñosPorPuntoPorDia;
+
+                    fechaProximoCambioAjustada = new Date(fechaCambio);
+                    fechaProximoCambioAjustada.setDate(fechaCambio.getDate() + Math.floor(diasDurabilidadRestante));
+
+                    durabilidadAjustada = diasTranscurridos + diasDurabilidadRestante;
+
+                    desgastePezonerasPorDiaAjustada = totalPezoneras / durabilidadAjustada;
+
+                    mensajeAjuste = `
+                        <p class="section-title">Resultados Ajustados por Modificación:</p>
+                        <p><strong>Fecha de Cambio:</strong> ${fechaCambio.toLocaleDateString('es-ES')}</p>
+                        <p><strong>Nuevo Número de Vacas:</strong> ${vacasAjustadas}</p>
+                        <p><strong>Nuevo Número de Puntos de Ordeño:</strong> ${puntosOrdenoAjustados}</p>
+                        <p class="highlight"><strong>Durabilidad Ajustada (en días):</strong> ${Math.floor(durabilidadAjustada)}</p>
+                        <p class="highlight"><strong>Nueva Fecha Próxima de Cambio:</strong> ${fechaProximoCambioAjustada.toLocaleDateString('es-ES')}</p>
+                        <p><strong>Número Total de Pezoneras:</strong> ${totalPezoneras}</p>
+                        <p><strong>Desgaste Total de Pezoneras por Día:</strong> ${desgastePezonerasPorDiaAjustada.toFixed(2)}</p>
+                    `;
+
+                    explicacionAjuste = `
+                        <div class="explicacion">
+                            <p class="section-title">Ajustes por Cambio:</p>
+                            <p><strong>Días transcurridos hasta el ${fechaCambio.toLocaleDateString('es-ES')}:</strong> ${diasTranscurridos} días.</p>
+                            <p><strong>Ordeños por punto hasta esa fecha:</strong> ${ordenosDia} × ${vacas} × ${diasTranscurridos} / ${puntosOrdeno} = ${ordeñosPorPuntoHastaCambio.toFixed(1)}</p>
+                            <p><strong>Durabilidad restante:</strong> ${durabilidad} − ${ordeñosPorPuntoHastaCambio.toFixed(1)} = ${durabilidadRestante.toFixed(1)} ordeños por punto.</p>
+                            <p><strong>Nuevo número de ordeños por día con ${vacasAjustadas} vacas:</strong> ${ordenosDia} × ${vacasAjustadas} = ${nuevosOrdeñosTotalesPorDia}</p>
+                            <p><strong>Nuevos ordeños por punto por día con ${puntosOrdenoAjustados} puntos:</strong> ${nuevosOrdeñosTotalesPorDia} / ${puntosOrdenoAjustados} = ${nuevosOrdeñosPorPuntoPorDia.toFixed(2)}</p>
+                            <p><strong>Días de durabilidad restante:</strong> ${durabilidadRestante.toFixed(1)} / ${nuevosOrdeñosPorPuntoPorDia.toFixed(2)} = ${diasDurabilidadRestante.toFixed(2)}, es decir, ${Math.floor(diasDurabilidadRestante)} días.</p>
+                            <p class="highlight"><strong>Durabilidad Ajustada (en días):</strong> ${diasTranscurridos} + ${Math.floor(diasDurabilidadRestante)} = ${Math.floor(durabilidadAjustada)}</p>
+                            <p><strong>Fecha de Cambio:</strong> ${fechaCambio.toLocaleDateString('es-ES')}</p>
+                            <p><strong>Nuevo Número de Vacas:</strong> ${vacasAjustadas}</p>
+                            <p><strong>Nuevo Número de Puntos de Ordeño:</strong> ${puntosOrdenoAjustados}</p>
+                            <p class="highlight"><strong>Nueva Fecha Próxima de Cambio:</strong> ${fechaProximoCambioAjustada.toLocaleDateString('es-ES')}</p>
+                            <p><strong>Desgaste Total de Pezoneras por Día:</strong> ${totalPezoneras} / ${Math.floor(durabilidadAjustada)} = ${desgastePezonerasPorDiaAjustada.toFixed(2)}</p>
+                            <p><strong>Nuevo Número Total de Pezoneras:</strong> ${totalPezoneras} (${puntosOrdenoAjustados} puntos * ${pezonerasPorPunto} pezoneras por punto)</p>
+                        </div>
+                    `;
+                }
+            }
+
+            const resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = `
+                <p class="section-title">Resultados Iniciales:</p>
+                <p><strong>Fecha de Inicio:</strong> ${fechaInicio.toLocaleDateString('es-ES')}</p>
+                <p><strong>Durabilidad Inicial de las Pezoneras (en días):</strong> ${Math.floor(diasDurabilidadInicial)}</p>
+                <p><strong>Fecha Próxima de Cambio (Inicial):</strong> ${fechaProximoCambioInicial.toLocaleDateString('es-ES')}</p>
+                <p><strong>Días Equivalentes en Meses (Inicial):</strong> ${mesesEquivalentes}</p>
+                ${fechaDiasEspecificos}
+                <p><strong>Número Total de Pezoneras (Inicial):</strong> ${puntosOrdeno * pezonerasPorPunto}</p>
+                <p><strong>Desgaste Total de Pezoneras por Día (Inicial):</strong> ${desgastePezonerasPorDiaInicial.toFixed(2)}</p>
+                ${mensajeAjuste}
+                ${explicacionAjuste}
+            `;
+        }
+    </script>
+</body>
+</html>
